@@ -1,0 +1,10 @@
+{
+	"recommendations": [
+		"dbaeumer.vscode-eslint",
+		"ms-vscode.vscode-typescript-next",
+		"esbenp.prettier-vscode",
+		"foxundermoon.shell-format",
+		"mkhl.shfmt",
+		"timonwong.shellcheck"
+	]
+}
