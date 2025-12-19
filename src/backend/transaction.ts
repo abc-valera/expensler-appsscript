@@ -2,21 +2,18 @@ import { mccMap } from './mcc_map_en.js'
 
 export class Transaction {
 	public readonly id: string
-	public readonly type: 'income' | 'expense' | 'blank'
 	public readonly amount: number
-	private readonly time: number
-	public readonly formattedTime: string
-	public readonly description?: string
+	public readonly time: string
+	public readonly vendor: string
+	public readonly category: string
 	public readonly comment?: string
-	public readonly mccCode: number
-	public readonly mccShortDescription: string
 	public ref?: string
 
 	constructor(input: {
 		id: string
 		amount: number
 		time: number
-		description?: string
+		vendor: string
 		comment?: string
 		mccCode: number
 	}) {
@@ -27,31 +24,28 @@ export class Transaction {
 		if (!input.amount) {
 			throw new Error('Transaction amount is missing')
 		}
+
 		this.amount = input.amount
 		if (!input.time) {
 			throw new Error('Transaction time is missing')
 		}
-		this.time = input.time
-		this.formattedTime = Utilities.formatDate(
-			new Date(this.time),
+
+		this.time = Utilities.formatDate(
+			new Date(input.time),
 			Session.getScriptTimeZone(),
 			'yyyy-MM-dd HH:mm:ss',
 		)
+
+		if (!input.vendor) {
+			throw new Error('Transaction vendor is missing')
+		}
+		this.vendor = input.vendor
+
 		if (!input.mccCode) {
 			throw new Error('Transaction MCC is missing')
 		}
-		this.mccCode = input.mccCode
-		this.description = input.description
+		this.category = mccMap[input.mccCode]?.shortDescription || 'Unknown'
+
 		this.comment = input.comment
-
-		// Set type to blank for MCC 4829 (Money transfer), otherwise use income/expense
-		if (input.mccCode === 4829) {
-			this.type = 'blank'
-		}
-		else {
-			this.type = input.amount > 0 ? 'income' : 'expense'
-		}
-
-		this.mccShortDescription = mccMap[input.mccCode]?.shortDescription || 'Unknown'
 	}
 }

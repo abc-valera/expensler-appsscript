@@ -20,13 +20,11 @@ export function getTargetSheet(): GoogleAppsScript.Spreadsheet.Sheet {
 
 		const headers = [
 			'ID',
-			'Type',
-			'Amount',
 			'Time',
+			'Amount',
 			'Vendor',
+			'Category',
 			'Comment',
-			'MCC',
-			'Short Description',
 			'Ref',
 		]
 		sheet.appendRow(headers)
@@ -41,14 +39,12 @@ export function getTargetSheet(): GoogleAppsScript.Spreadsheet.Sheet {
 
 		// Set column widths
 		sheet.setColumnWidth(1, 150) // ID
-		sheet.setColumnWidth(2, 100) // Type
+		sheet.setColumnWidth(2, 140) // Time
 		sheet.setColumnWidth(3, 120) // Amount
-		sheet.setColumnWidth(4, 140) // Time
-		sheet.setColumnWidth(5, 300) // Vendor
+		sheet.setColumnWidth(4, 300) // Vendor
+		sheet.setColumnWidth(5, 140) // Category
 		sheet.setColumnWidth(6, 200) // Comment
-		sheet.setColumnWidth(7, 100) // MCC
-		sheet.setColumnWidth(8, 200) // Short Description
-		sheet.setColumnWidth(9, 150) // Ref
+		sheet.setColumnWidth(7, 150) // Ref
 
 		// Freeze header row
 		sheet.setFrozenRows(1)

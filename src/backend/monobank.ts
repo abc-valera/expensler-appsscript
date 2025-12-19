@@ -58,7 +58,7 @@ export function getTransactionsFromMonobank(): Transaction[] {
 			id: dto.id,
 			amount: dto.amount / 100,
 			time: dto.time * 1000,
-			description: dto.description,
+			vendor: dto.description,
 			comment: dto.comment,
 			mccCode: dto.mcc,
 		}))

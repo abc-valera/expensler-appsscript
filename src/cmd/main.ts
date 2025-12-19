@@ -38,13 +38,11 @@ function syncMonobankTransactions() {
 
 			newRows.push([
 				transaction.id,
-				transaction.type,
+				transaction.time,
 				transaction.amount,
-				transaction.formattedTime,
-				transaction.description,
+				transaction.vendor,
+				transaction.category,
 				transaction.comment,
-				transaction.mccCode,
-				transaction.mccShortDescription,
 				'', // Ref column - empty by default, to be filled manually
 			])
 		})
@@ -52,17 +50,17 @@ function syncMonobankTransactions() {
 		// Batch append new rows
 		if (newRows.length > 0) {
 			const startRow = lastRow + 1
-			sheet.getRange(startRow, 1, newRows.length, 9).setValues(newRows)
+			sheet.getRange(startRow, 1, newRows.length, newRows[0].length).setValues(newRows)
 
 			// Apply formatting to new rows
 			formatColumns(sheet, startRow, newRows.length)
 		}
 
-		// Sort all transactions by Time column (column 4) in descending order (newest first)
+		// Sort all transactions by Time column (column 2) in descending order (newest first)
 		const dataLastRow = sheet.getLastRow()
 		if (dataLastRow > 1) {
-			const dataRange = sheet.getRange(2, 1, dataLastRow - 1, 9)
-			dataRange.sort({ column: 4, ascending: false })
+			const dataRange = sheet.getRange(2, 1, dataLastRow - 1, sheet.getLastColumn())
+			dataRange.sort({ column: 2, ascending: false })
 		}
 
 		Logger.log(`Successfully synced ${newRows.length} new transactions`)
