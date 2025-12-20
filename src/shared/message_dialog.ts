@@ -1,5 +1,5 @@
 // Use HTML dialogs instead of built-in alerts to avoid the stuck "Working..." spinner in Sheets.
-export function showHtmlDialog({ message, type = 'info' }: { message: string, type?: 'info' | 'error' }) {
+export function showHtmlDialog({ message, type }: { message: string, type: 'info' | 'error' }) {
 	const colors = type === 'error'
 		? { border: '#d93025', background: '#fce8e6' }
 		: { border: '#1a73e8', background: '#e8f0fe' }

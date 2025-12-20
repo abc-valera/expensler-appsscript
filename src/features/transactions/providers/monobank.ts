@@ -1,4 +1,5 @@
-import { Transaction } from './transaction.js'
+import { mccMap } from '../model/mcc_map_en'
+import { Transaction } from '../model/model'
 
 /**
  * Fetches statements from Monobank API
@@ -29,7 +30,7 @@ interface MonobankStatement {
 	counterName: string
 }
 
-export function getTransactionsFromMonobank(): Transaction[] {
+export function fetchMonobankTransactions(): Transaction[] {
 	const now = new Date()
 	const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 	const from = Math.floor(startOfMonth.getTime() / 1000)
@@ -56,17 +57,17 @@ export function getTransactionsFromMonobank(): Transaction[] {
 		// Convert DTOs to Transaction models
 		const transactions: Transaction[] = dtoStatements.map(dto => new Transaction({
 			id: dto.id,
+			time: new Date(dto.time * 1000),
 			amount: dto.amount / 100,
-			time: dto.time * 1000,
 			vendor: dto.description,
+			category: mccMap[dto.mcc]?.shortDescription || 'Unknown',
 			comment: dto.comment,
-			mccCode: dto.mcc,
 		}))
 
 		return transactions
 	}
-	catch (e: any) {
-		Logger.log(`Error details: ${e.toString()}`)
+	catch (e: unknown) {
+		Logger.log(`Error details: ${e}`)
 		throw e
 	}
 }
