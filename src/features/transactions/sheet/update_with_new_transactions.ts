@@ -1,6 +1,7 @@
 import type { TransactionsFetcher } from '../model/model'
 import { showHtmlDialog } from '../../../shared/message_dialog'
 import { newCurrentMonthYear } from '../../../shared/month_year'
+import { updateStatsSheet } from '../../stats/sheet/update'
 import { columnsNumber, createTransactionsSheet } from './create'
 import { getTransactionsSheet } from './get'
 
@@ -100,6 +101,10 @@ export function updateWithNewTransactionsForCurrentMonth(fetchTransactions: Tran
 			message: `Синхронізовано ${newRows.length} нових транзакцій`,
 			type: 'info',
 		})
+
+		// Update stats sheet with new transaction data
+		// TODO: maybe move this to another place
+		updateStatsSheet(currentMonthYear)
 	}
 	catch (e) {
 		Logger.log(`Error: ${e}`)

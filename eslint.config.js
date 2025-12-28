@@ -4,4 +4,7 @@ export default antfu({
 	stylistic: {
 		indent: 'tab',
 	},
+	rules: {
+		'jsonc/sort-keys': 'off',
+	},
 })

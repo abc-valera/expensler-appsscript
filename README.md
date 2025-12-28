@@ -8,7 +8,7 @@ _IN PROGRESS_
 
 Expensler is an apps-script google sheets addon for tracking personal finance.
 
-## Deployment
+## Development
 
 First, make a local copy of the example.env file and populate it with API keys:
 
@@ -23,6 +23,8 @@ npm i
 npm run authenticate
 npm run deploy
 ```
+
+The logs can be seen in the Executions page of the Apps Script dashboard: https://script.google.com/home/executions
 
 ### Deployment explanation
 

@@ -18,29 +18,31 @@ export function parseRowIntoTransaction(row: unknown[]): Transaction {
 	})
 }
 
-export function getTransactions(monthYear: MonthYear): Transaction[] {
+export function getTransactions(monthYear: MonthYear): Map<string, Transaction> {
 	const sheet = getTransactionsSheet(monthYear)
 	if (!sheet) {
 		Logger.log(`Transactions sheet for ${monthYear.format()} not found`)
-		return []
+		return new Map()
 	}
 
 	const lastRow = sheet.getLastRow()
 	if (lastRow <= 1) { // No data rows
-		return []
+		return new Map()
 	}
 
 	const data = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues()
 
-	return data
-		.map((row, index) => {
-			try {
-				return parseRowIntoTransaction(row)
-			}
-			catch (e) {
-				Logger.log(`Error parsing row ${index + 2}: ${e}`)
-				return null
-			}
-		})
-		.filter((transaction): transaction is Transaction => transaction !== null)
+	const transactionMap = new Map<string, Transaction>()
+
+	data.forEach((row, index) => {
+		try {
+			const transaction = parseRowIntoTransaction(row)
+			transactionMap.set(transaction.id, transaction)
+		}
+		catch (e) {
+			Logger.log(`Error parsing row ${index + 2}: ${e}`)
+		}
+	})
+
+	return transactionMap
 }
