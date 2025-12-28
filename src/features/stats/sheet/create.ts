@@ -34,6 +34,10 @@ export function createStatsSheet(monthYear: MonthYear): GoogleAppsScript.Spreads
 	// Freeze header row
 	sheet.setFrozenRows(1)
 
+	// Protect the entire stats sheet with warning
+	const protection = sheet.protect().setDescription('Stats sheet - Auto-generated data')
+	protection.setWarningOnly(true)
+
 	Logger.log(`Created new stats sheet: ${statsSheetName}`)
 
 	return sheet

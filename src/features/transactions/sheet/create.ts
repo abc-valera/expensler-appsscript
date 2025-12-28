@@ -95,6 +95,18 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 	sheet.clearConditionalFormatRules()
 	sheet.setConditionalFormatRules(rules)
 
+	// Protect ID, Time, and Amount columns with warning
+	const columnsToProtect = [
+		{ column: 'A:A', name: 'ID' },
+		{ column: 'B:B', name: 'Time' },
+		{ column: 'C:C', name: 'Amount' },
+	]
+	columnsToProtect.forEach(({ column, name }) => {
+		const range = sheet.getRange(column)
+		const protection = range.protect().setDescription(`${name} column - Not for manual editing`)
+		protection.setWarningOnly(true)
+	})
+
 	Logger.log(`Created new sheet: ${monthYear.format()}`)
 
 	return sheet
