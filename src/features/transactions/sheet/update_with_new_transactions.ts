@@ -2,7 +2,7 @@ import type { TransactionsFetcher } from '../model/model'
 import { showHtmlDialog } from '../../../shared/message_dialog'
 import { newCurrentMonthYear } from '../../../shared/month_year'
 import { updateStatsSheet } from '../../stats/sheet/update'
-import { columnsNumber, createTransactionsSheet } from './create'
+import { createTransactionsSheet } from './create'
 import { getTransactionsSheet } from './get'
 
 export function updateWithNewTransactionsForCurrentMonth(fetchTransactions: TransactionsFetcher) {
@@ -49,44 +49,10 @@ export function updateWithNewTransactionsForCurrentMonth(fetchTransactions: Tran
 			])
 		})
 
-		// Batch append new rows
+		// Batch append new rows (formatting is already applied to the entire columns)
 		if (newRows.length > 0) {
 			const startRow = lastRow + 1
 			sheet.getRange(startRow, 1, newRows.length, newRows[0].length).setValues(newRows)
-
-			const numRows = newRows.length
-
-			// Apply font to all new rows
-			const allColumnsRange = sheet.getRange(startRow, 1, numRows, columnsNumber)
-			allColumnsRange.setFontFamily('IBM Plex Mono')
-			allColumnsRange.setFontSize(12)
-
-			// ID column (A) - centered
-			sheet.getRange(startRow, 1, numRows, 1).setHorizontalAlignment('center')
-
-			// Time column (B) - datetime format
-			sheet.getRange(startRow, 2, numRows, 1).setNumberFormat('dd.mm.yyyy hh:mm')
-
-			// Amount column (C) - currency format, right-aligned
-			const amountRange = sheet.getRange(startRow, 3, numRows, 1)
-			amountRange.setNumberFormat('#,##0.00 ₴')
-			amountRange.setHorizontalAlignment('right')
-
-			// Vendor column (D) - left-aligned, wrap text
-			sheet.getRange(startRow, 4, numRows, 1)
-				.setWrap(true)
-				.setVerticalAlignment('middle')
-
-			// Category column (E) - centered
-			sheet.getRange(startRow, 5, numRows, 1).setHorizontalAlignment('center')
-
-			// Comment column (F) - left-aligned, wrap text
-			sheet.getRange(startRow, 6, numRows, 1)
-				.setWrap(true)
-				.setVerticalAlignment('middle')
-
-			// Ref column (G) - centered
-			sheet.getRange(startRow, 7, numRows, 1).setHorizontalAlignment('center')
 		}
 
 		// Sort all transactions by Time column (column 2) in descending order (newest first)

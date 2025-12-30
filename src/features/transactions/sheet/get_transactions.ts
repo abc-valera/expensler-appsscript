@@ -1,6 +1,6 @@
 import type { MonthYear } from '../../../shared/month_year'
-import { getTransactionsSheet } from '../../transactions/sheet/get'
 import { Transaction } from '../model/model'
+import { getAvailableMonthYears, getTransactionsSheet } from './get'
 
 export function parseRowIntoTransaction(row: unknown[]): Transaction {
 	if (!Array.isArray(row) || row.length < 7) {
@@ -18,20 +18,19 @@ export function parseRowIntoTransaction(row: unknown[]): Transaction {
 	})
 }
 
-export function getTransactions(monthYear: MonthYear): Map<string, Transaction> {
+export function getTransactionsForMonthYear(monthYear: MonthYear): Map<string, Transaction> {
 	const sheet = getTransactionsSheet(monthYear)
 	if (!sheet) {
-		Logger.log(`Transactions sheet for ${monthYear.format()} not found`)
+		Logger.log(`Transactions sheet for ${monthYear.toString()} not found`)
 		return new Map()
 	}
 
 	const lastRow = sheet.getLastRow()
-	if (lastRow <= 1) { // No data rows
+	if (lastRow <= 1) {
 		return new Map()
 	}
 
 	const data = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues()
-
 	const transactionMap = new Map<string, Transaction>()
 
 	data.forEach((row, index) => {
@@ -45,4 +44,18 @@ export function getTransactions(monthYear: MonthYear): Map<string, Transaction> 
 	})
 
 	return transactionMap
+}
+
+export function getAllTransactions(): Map<string, Transaction> {
+	const monthYears = getAvailableMonthYears()
+	const allTransactions = new Map<string, Transaction>()
+
+	monthYears.forEach((monthYear) => {
+		const monthTransactions = getTransactionsForMonthYear(monthYear)
+		monthTransactions.forEach((transaction, id) => {
+			allTransactions.set(id, transaction)
+		})
+	})
+
+	return allTransactions
 }

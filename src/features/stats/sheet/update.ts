@@ -1,22 +1,42 @@
 import type { MonthYear } from '../../../shared/month_year'
 import type { CategoryAggregation } from '../model/category_aggregation'
 import type { VendorAggregation } from '../model/vendor_aggregation'
-import { getTransactions } from '../../transactions/sheet/get_transactions'
+import { getAllTransactions, getTransactionsForMonthYear } from '../../transactions/sheet/get_transactions'
 import { createStatsSheet } from './create'
 import { getStatsSheet } from './get'
 
-function aggregateByCategory(monthYear: MonthYear): CategoryAggregation[] {
-	const transactions = getTransactions(monthYear)
+export function updateStatsSheet(monthYear: MonthYear) {
+	let statsSheet = getStatsSheet(monthYear)
+	if (!statsSheet) {
+		statsSheet = createStatsSheet(monthYear)
+	}
 
-	// Reference transactions: if ref column isn't empty, the transaction references another transaction
+	// Clear existing data but keep headers
+	{
+		const lastRow = statsSheet.getLastRow()
+		if (lastRow > 1) {
+			statsSheet.deleteRows(2, lastRow - 1)
+		}
+	}
+
+	const currentMonthTransactions = getTransactionsForMonthYear(monthYear)
+	if (currentMonthTransactions.size === 0) {
+		Logger.log(`No transactions found for month: ${monthYear.toString()}`)
+		return
+	}
+	const allTransactions = getAllTransactions()
+
+	// Calculate the adjustedAmounts for reference transactions.
+	//
+	// If ref column isn't empty, the transaction references another transaction
 	// - Positive amount: debt repayment received (someone was owing me money)
 	// - Negative amount: payment of my debt (I was owing someone money)
 	// The reference amount is added/subtracted to the original transaction's amount
 	const adjustedAmounts = new Map<string, number>()
 
-	transactions.forEach((transaction) => {
+	allTransactions.forEach((transaction) => {
 		if (transaction.ref && transaction.ref.trim() !== '') {
-			const originalTransaction = transactions.get(transaction.ref)
+			const originalTransaction = allTransactions.get(transaction.ref)
 			if (originalTransaction) {
 				const currentAdjustment = adjustedAmounts.get(originalTransaction.id) ?? originalTransaction.amount
 				adjustedAmounts.set(originalTransaction.id, currentAdjustment + transaction.amount)
@@ -30,61 +50,9 @@ function aggregateByCategory(monthYear: MonthYear): CategoryAggregation[] {
 	})
 
 	const categoryMap = new Map<string, CategoryAggregation>()
-
-	transactions.forEach((transaction) => {
-		if (transaction.ref && transaction.ref.trim() !== '') {
-			return
-		}
-
-		if (transaction.category === 'Ignore') {
-			return
-		}
-
-		const key = transaction.category
-		const adjustedAmount = adjustedAmounts.get(transaction.id) ?? transaction.amount
-
-		if (!categoryMap.has(key)) {
-			categoryMap.set(key, {
-				category: key,
-				totalAmount: 0,
-				transactionCount: 0,
-			})
-		}
-
-		const stats = categoryMap.get(key)!
-		stats.totalAmount += adjustedAmount
-		stats.transactionCount += 1
-	})
-
-	return Array.from(categoryMap.values()).sort(
-		(a, b) => Math.abs(b.totalAmount) - Math.abs(a.totalAmount),
-	)
-}
-
-function aggregateByVendor(monthYear: MonthYear): VendorAggregation[] {
-	const transactionMap = getTransactions(monthYear)
-
-	// Same reference transaction logic as aggregateByCategory
-	const adjustedAmounts = new Map<string, number>()
-
-	transactionMap.forEach((transaction) => {
-		if (transaction.ref && transaction.ref.trim() !== '') {
-			const originalTransaction = transactionMap.get(transaction.ref)
-			if (originalTransaction) {
-				const currentAdjustment = adjustedAmounts.get(originalTransaction.id) ?? originalTransaction.amount
-				adjustedAmounts.set(originalTransaction.id, currentAdjustment + transaction.amount)
-			}
-		}
-		else {
-			if (!adjustedAmounts.has(transaction.id)) {
-				adjustedAmounts.set(transaction.id, transaction.amount)
-			}
-		}
-	})
-
 	const vendorMap = new Map<string, VendorAggregation>()
 
-	transactionMap.forEach((transaction) => {
+	currentMonthTransactions.forEach((transaction) => {
 		if (transaction.ref && transaction.ref.trim() !== '') {
 			return
 		}
@@ -93,101 +61,52 @@ function aggregateByVendor(monthYear: MonthYear): VendorAggregation[] {
 			return
 		}
 
-		const key = transaction.vendor
+		const category = transaction.category
+		const vendor = transaction.vendor
 		const adjustedAmount = adjustedAmounts.get(transaction.id) ?? transaction.amount
 
-		if (!vendorMap.has(key)) {
-			vendorMap.set(key, {
-				vendor: key,
+		let categoryStats = categoryMap.get(category)
+		if (!categoryStats) {
+			categoryStats = {
+				category,
 				totalAmount: 0,
 				transactionCount: 0,
-			})
+			}
+			categoryMap.set(category, categoryStats)
 		}
+		categoryStats.totalAmount += adjustedAmount
+		categoryStats.transactionCount += 1
 
-		const stats = vendorMap.get(key)!
-		stats.totalAmount += adjustedAmount
-		stats.transactionCount += 1
+		let vendorStats = vendorMap.get(vendor)
+		if (!vendorStats) {
+			vendorStats = {
+				vendor,
+				totalAmount: 0,
+				transactionCount: 0,
+			}
+			vendorMap.set(vendor, vendorStats)
+		}
+		vendorStats.totalAmount += adjustedAmount
+		vendorStats.transactionCount += 1
 	})
 
-	return Array.from(vendorMap.values()).sort(
+	const categoryAggregations = Array.from(categoryMap.values()).sort(
 		(a, b) => Math.abs(b.totalAmount) - Math.abs(a.totalAmount),
 	)
-}
 
-export function updateStatsSheet(monthYear: MonthYear): void {
-	const ss = SpreadsheetApp.getActiveSpreadsheet()
-	const transactionsSheetName = monthYear.format()
+	const vendorAggregations = Array.from(vendorMap.values()).sort(
+		(a, b) => Math.abs(b.totalAmount) - Math.abs(a.totalAmount),
+	)
 
-	const transactionsSheet = ss.getSheetByName(transactionsSheetName)
-	if (!transactionsSheet) {
-		Logger.log(`Transactions sheet ${transactionsSheetName} not found`)
-		return
-	}
+	const categoryRows = categoryAggregations.map(stat => [stat.category, stat.totalAmount, stat.transactionCount])
+	const vendorRows = vendorAggregations.map(stat => [stat.vendor, stat.totalAmount, stat.transactionCount])
 
-	// Get or create stats sheet
-	let statsSheet = getStatsSheet(monthYear)
-	if (!statsSheet) {
-		statsSheet = createStatsSheet(monthYear)
-	}
-
-	// Clear existing data but keep headers
-	const lastRow = statsSheet.getLastRow()
-	if (lastRow > 1) {
-		statsSheet.deleteRows(2, lastRow - 1)
-	}
-
-	const categoryStats = aggregateByCategory(monthYear)
-	const vendorStats = aggregateByVendor(monthYear)
-
-	if (categoryStats.length === 0 && vendorStats.length === 0) {
-		Logger.log('No transactions to analyze')
-		return
-	}
-
-	// Prepare rows for category stats
-	const categoryRows = categoryStats.map(stat => [stat.category, stat.totalAmount, stat.transactionCount])
-	// Prepare rows for vendor stats
-	const vendorRows = vendorStats.map(stat => [stat.vendor, stat.totalAmount, stat.transactionCount])
-	// Get the maximum number of rows needed
-	const maxRows = Math.max(categoryRows.length, vendorRows.length)
-
-	// Write category data to columns A-C
 	if (categoryRows.length > 0) {
-		statsSheet
-			.getRange(2, 1, categoryRows.length, 3)
-			.setValues(categoryRows)
-			.setFontFamily('IBM Plex Mono')
-			.setFontSize(12)
-
-		// Format Amount column (B) as currency
-		statsSheet
-			.getRange(2, 2, categoryRows.length, 1)
-			.setNumberFormat('#,##0.00 ₴')
-			.setHorizontalAlignment('right')
-
-		// Format Category and Count columns
-		statsSheet.getRange(2, 1, categoryRows.length, 1).setHorizontalAlignment('left') // Category
-		statsSheet.getRange(2, 3, categoryRows.length, 1).setHorizontalAlignment('center') // Count
+		statsSheet.getRange(2, 1, categoryRows.length, 3).setValues(categoryRows)
 	}
-
-	// Write vendor data to columns E-G
 	if (vendorRows.length > 0) {
-		statsSheet
-			.getRange(2, 5, vendorRows.length, 3)
-			.setValues(vendorRows)
-			.setFontFamily('IBM Plex Mono')
-			.setFontSize(12)
-
-		// Format Amount column (F) as currency
-		statsSheet
-			.getRange(2, 6, vendorRows.length, 1)
-			.setNumberFormat('#,##0.00 ₴')
-			.setHorizontalAlignment('right')
-
-		// Format Vendor and Count columns
-		statsSheet.getRange(2, 5, vendorRows.length, 1).setHorizontalAlignment('left') // Vendor
-		statsSheet.getRange(2, 7, vendorRows.length, 1).setHorizontalAlignment('center') // Count
+		statsSheet.getRange(2, 5, vendorRows.length, 3).setValues(vendorRows)
 	}
 
-	Logger.log(`Stats sheet updated: ${monthYear.format()}-stats`)
+	Logger.log(`Stats sheet updated: ${monthYear.toString()}-stats`)
 }

@@ -14,7 +14,7 @@ export class MonthYear {
 		return new MonthYear(year, month)
 	}
 
-	format(): string {
+	toString(): string {
 		const monthStr = String(this.month).padStart(2, '0')
 		return `${this.year}-${monthStr}`
 	}

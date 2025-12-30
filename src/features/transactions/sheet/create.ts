@@ -20,20 +20,12 @@ const colors = {
 }
 
 export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.Spreadsheet.Sheet {
-	Logger.log(`Creating new sheet: ${monthYear.format()}`)
+	Logger.log(`Creating new sheet: ${monthYear.toString()}`)
 
 	const ss = SpreadsheetApp.getActiveSpreadsheet()
-	const sheet = ss.insertSheet(monthYear.format())
+	const sheet = ss.insertSheet(monthYear.toString())
 
 	sheet.appendRow(sheetHeaders)
-
-	// Format headers
-	const headerRange = sheet.getRange(1, 1, 1, columnsNumber)
-	headerRange.setFontWeight('bold')
-	headerRange.setBackground('#f3f3f3')
-	headerRange.setHorizontalAlignment('center')
-	headerRange.setFontFamily('IBM Plex Serif')
-	headerRange.setFontSize(14) // Set header font size
 
 	// Set column widths
 	sheet.setColumnWidth(1, 150) // ID
@@ -43,6 +35,36 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 	sheet.setColumnWidth(5, 140) // Category
 	sheet.setColumnWidth(6, 200) // Comment
 	sheet.setColumnWidth(7, 150) // Ref
+
+	// Format data columns (apply to entire columns for future data)
+	// ID column (A) - centered
+	sheet.getRange('A:A').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
+
+	// Time column (B) - datetime format
+	sheet.getRange('B:B').setNumberFormat('dd.mm.yyyy hh:mm').setFontFamily('IBM Plex Mono').setFontSize(12)
+
+	// Amount column (C) - currency format, right-aligned
+	sheet.getRange('C:C').setNumberFormat('#,##0.00 ₴').setHorizontalAlignment('right').setFontFamily('IBM Plex Mono').setFontSize(12)
+
+	// Vendor column (D) - left-aligned, wrap text
+	sheet.getRange('D:D').setWrap(true).setVerticalAlignment('middle').setFontFamily('IBM Plex Mono').setFontSize(12)
+
+	// Category column (E) - centered
+	sheet.getRange('E:E').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
+
+	// Comment column (F) - left-aligned, wrap text
+	sheet.getRange('F:F').setWrap(true).setVerticalAlignment('middle').setFontFamily('IBM Plex Mono').setFontSize(12)
+
+	// Ref column (G) - centered
+	sheet.getRange('G:G').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
+
+	// Format headers (apply after column formatting to override)
+	const headerRange = sheet.getRange(1, 1, 1, columnsNumber)
+	headerRange.setFontWeight('bold')
+	headerRange.setBackground('#f3f3f3')
+	headerRange.setHorizontalAlignment('center')
+	headerRange.setFontFamily('IBM Plex Serif')
+	headerRange.setFontSize(14) // Set header font size
 
 	// Freeze header row
 	sheet.setFrozenRows(1)
@@ -107,7 +129,7 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 		protection.setWarningOnly(true)
 	})
 
-	Logger.log(`Created new sheet: ${monthYear.format()}`)
+	Logger.log(`Created new sheet: ${monthYear.toString()}`)
 
 	return sheet
 }
