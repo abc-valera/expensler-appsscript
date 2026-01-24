@@ -1,18 +1,23 @@
-import type { TransactionsFetcher } from '../model/model'
 import { showHtmlDialog } from '../../../shared/message_dialog'
-import { newCurrentMonthYear } from '../../../shared/month_year'
 import { updateStatsSheet } from '../../stats/sheet/update'
+import { getTransactions } from '../usecase/usecase'
 import { createTransactionsSheet } from './create'
 import { getTransactionsSheet } from './get'
 
-export function updateWithNewTransactionsForCurrentMonth(fetchTransactions: TransactionsFetcher) {
-	Logger.log('Updating transactions sheet with new transactions for the current month using', fetchTransactions.name)
+export function updateWithNewTransactionsForCurrentAndPreviousMonth() {
+	Logger.log('Updating transactions sheet with new transactions for the current and previous month')
 
-	const currentMonthYear = newCurrentMonthYear()
-	let sheet = getTransactionsSheet(currentMonthYear)
+	// TODO: update the sheet for current and previous month separately
+
+	const currentMonth = new Date()
+	const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+
+	const transactions = getTransactions(previousMonth, currentMonth)
+
+	let sheet = getTransactionsSheet(currentMonth)
 	if (!sheet) {
 		Logger.log('No existing sheet found for current month, creating a new one')
-		sheet = createTransactionsSheet(currentMonthYear)
+		sheet = createTransactionsSheet(currentMonth)
 	}
 
 	try {
@@ -31,7 +36,7 @@ export function updateWithNewTransactionsForCurrentMonth(fetchTransactions: Tran
 
 		// Process and collect new transactions
 		const newRows: unknown[][] = []
-		const transactions = fetchTransactions()
+
 		transactions.forEach((transaction) => {
 			// Skip if already exists
 			if (existingIds.has(transaction.id.toString())) {
@@ -40,6 +45,7 @@ export function updateWithNewTransactionsForCurrentMonth(fetchTransactions: Tran
 
 			newRows.push([
 				transaction.id,
+				transaction.accountName,
 				transaction.time,
 				transaction.amount,
 				transaction.vendor,
@@ -55,11 +61,11 @@ export function updateWithNewTransactionsForCurrentMonth(fetchTransactions: Tran
 			sheet.getRange(startRow, 1, newRows.length, newRows[0].length).setValues(newRows)
 		}
 
-		// Sort all transactions by Time column (column 2) in descending order (newest first)
+		// Sort all transactions by Time column (column 3) in descending order (newest first)
 		const dataLastRow = sheet.getLastRow()
 		if (dataLastRow > 1) {
 			const dataRange = sheet.getRange(2, 1, dataLastRow - 1, sheet.getLastColumn())
-			dataRange.sort({ column: 2, ascending: false })
+			dataRange.sort({ column: 3, ascending: false })
 		}
 
 		Logger.log(`Successfully synced ${newRows.length} new transactions`)
@@ -70,7 +76,7 @@ export function updateWithNewTransactionsForCurrentMonth(fetchTransactions: Tran
 
 		// Update stats sheet with new transaction data
 		// TODO: maybe move this to another place
-		updateStatsSheet(currentMonthYear)
+		updateStatsSheet(currentMonth)
 	}
 	catch (e) {
 		Logger.log(`Error: ${e}`)

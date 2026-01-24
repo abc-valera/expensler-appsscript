@@ -1,15 +1,15 @@
-import type { MonthYear } from '../../../shared/month_year'
+import { formatDateToMonthYear } from '../../../shared/dateutil'
 
 const categoryHeaders = ['Category', 'Total Amount', 'Transaction Count']
 const vendorHeaders = ['Vendor', 'Total Amount', 'Transaction Count']
 const sheetHeaders = [...categoryHeaders, '', ...vendorHeaders]
 export const columnsNumber = sheetHeaders.length
 
-export function createStatsSheet(monthYear: MonthYear): GoogleAppsScript.Spreadsheet.Sheet {
-	Logger.log(`Creating new stats sheet: ${monthYear.toString()}-stats`)
+export function createStatsSheet(month: Date): GoogleAppsScript.Spreadsheet.Sheet {
+	const statsSheetName = `${formatDateToMonthYear(month)}-stats`
+	Logger.log(`Creating new stats sheet: ${statsSheetName}`)
 
 	const ss = SpreadsheetApp.getActiveSpreadsheet()
-	const statsSheetName = `${monthYear.toString()}-stats`
 	const sheet = ss.insertSheet(statsSheetName)
 
 	sheet.appendRow(sheetHeaders)

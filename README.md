@@ -30,10 +30,6 @@ The logs can be seen in the Executions page of the Apps Script dashboard: https:
 
 TBD
 
-## Useful links
+## On js/ts
 
-MCC codes json list (merchant category code (MCC) is a four-digit number used to classify a business by the types of goods or services it provides): https://github.com/Oleksios/Merchant-Category-Codes
-
-On using clasp: https://developers.google.com/apps-script/guides/clasp
-
-On using typescript: https://developers.google.com/apps-script/guides/typescript
+To create a new Node.js project run `npm init -y`.

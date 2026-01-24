@@ -1,13 +1,7 @@
-import { env } from 'node:process'
 import commonjs from '@rollup/plugin-commonjs'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
-import replace from '@rollup/plugin-replace'
 import typescript from '@rollup/plugin-typescript'
-import { config } from 'dotenv'
-
-// Load environment variables
-config({ path: './env/example.env' })
-config({ path: './env/.env', override: true })
+import { string } from 'rollup-plugin-string'
 
 /**
  * Rollup plugin to disable tree shaking entry points.
@@ -46,30 +40,15 @@ export default [
 	{
 		input: 'src/cmd/main.ts',
 		output: {
-			dir: 'dist',
+			dir: 'build',
 			format: 'esm',
 		},
 		plugins: [
-			replace({
-				include: ['src/**'],
-				preventAssignment: true,
-				values: {
-					MONOBANK_TOKEN_PLACEHOLDER: loadEnv('MONOBANK_TOKEN'),
-					MONOBANK_ACCOUNT_PLACEHOLDER: loadEnv('MONOBANK_ACCOUNT'),
-				},
-			}),
 			disableEntryPointTreeShaking(),
 			nodeResolve(),
 			commonjs(),
 			typescript(),
+			string({ include: '**/*.html' }),
 		],
 	},
 ]
-
-function loadEnv(name) {
-	const val = env[name]
-	if (!val) {
-		throw new Error(`${name} is not set in environment variables`)
-	}
-	return val
-}

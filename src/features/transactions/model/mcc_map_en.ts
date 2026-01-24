@@ -8,6 +8,10 @@ interface MccEntry {
 	fullDescription: string
 }
 
+// MCC codes json list (merchant category code (MCC) is a four-digit number
+// used to classify a business by the types of goods or services it provides).
+//
+// The map was obtained from https://github.com/Oleksios/Merchant-Category-Codes
 export const mccMap: Record<string, MccEntry> = {
 	'1520': {
 		mcc: '1520',

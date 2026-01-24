@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<base target="_top">
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 16px;
+				margin: 0;
+			}
+			h2 {
+				margin-top: 0;
+				color: #333;
+			}
+			.bank-list {
+				margin: 16px 0;
+			}
+			.bank-item {
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				padding: 12px;
+				margin-bottom: 12px;
+				background-color: #f9f9f9;
+				position: relative;
+			}
+			.bank-name {
+				font-weight: bold;
+				font-size: 16px;
+				margin-bottom: 8px;
+				color: #1a73e8;
+			}
+			.bank-detail {
+				margin: 4px 0;
+				font-size: 14px;
+				color: #555;
+			}
+			.api-key-masked {
+				font-family: monospace;
+				color: #666;
+			}
+			.empty-state {
+				text-align: center;
+				padding: 32px 16px;
+				color: #666;
+			}
+			.button-container {
+				display: flex;
+				gap: 8px;
+				margin-top: 16px;
+			}
+			.add-button {
+				flex: 1;
+				padding: 12px;
+				background-color: #1a73e8;
+				color: white;
+				border: none;
+				border-radius: 4px;
+				font-size: 14px;
+				font-weight: bold;
+				cursor: pointer;
+			}
+			.add-button:hover {
+				background-color: #1765cc;
+			}
+			.delete-button {
+				flex: 1;
+				padding: 12px;
+				background-color: #ea4335;
+				color: white;
+				border: none;
+				border-radius: 4px;
+				font-size: 14px;
+				font-weight: bold;
+				cursor: pointer;
+			}
+			.delete-button:hover {
+				background-color: #d33828;
+			}
+			.delete-button:disabled {
+				background-color: #ccc;
+				cursor: not-allowed;
+			}
+		</style>
+	</head>
+	<body>
+		<h2>Bank Integrations</h2>
+		<div id="content"></div>
+		<div class="button-container">
+			<button class="add-button" onclick="handleAddBank()">
+				+ Configure Bank
+			</button>
+			<button id="delete-button" class="delete-button" onclick="handleDeleteBank()">
+				Unconfigure Bank
+			</button>
+		</div>
+
+		<script>
+			function renderBanks(banks) {
+				const contentDiv = document.getElementById('content');
+				const deleteButton = document.getElementById('delete-button');
+
+				if (banks.length === 0) {
+					contentDiv.innerHTML = '<div class="empty-state">No bank integrations configured.</div>';
+					deleteButton.disabled = true;
+				} else {
+					const banksHtml = banks.map((bank) => {
+						const maskedApiKey = bank.apiKey ? bank.apiKey.substring(0, 8) + '...' : 'N/A';
+
+						return `
+							<div class="bank-item">
+								<div class="bank-name">${bank.provider}</div>
+								<div class="bank-detail">
+									<strong>API Key:</strong>
+									<span class="api-key-masked">${maskedApiKey}</span>
+								</div>
+							</div>
+						`;
+					}).join('');
+
+					contentDiv.innerHTML = `<div class="bank-list">${banksHtml}</div>`;
+					deleteButton.disabled = false;
+				}
+			}
+
+			function handleAddBank() {
+				google.script.run
+					.withSuccessHandler(() => {
+						// Reload banks after adding
+						google.script.run.withSuccessHandler(renderBanks).getBanksData();
+					})
+					.addBankIntegration();
+			}
+
+			function handleDeleteBank() {
+				google.script.run
+					.withSuccessHandler(() => {
+						// Reload banks after deleting
+						google.script.run.withSuccessHandler(renderBanks).getBanksData();
+					})
+					.deleteBankIntegration();
+			}
+
+			// Load banks on page load
+			google.script.run.withSuccessHandler(renderBanks).getBanksData();
+		</script>
+	</body>
+</html>

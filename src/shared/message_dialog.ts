@@ -4,6 +4,7 @@ export function showHtmlDialog({ message, type }: { message: string, type: 'info
 		? { border: '#d93025', background: '#fce8e6' }
 		: { border: '#1a73e8', background: '#e8f0fe' }
 
+	// TODO: move to a separate html file
 	const html = HtmlService.createHtmlOutput(`
 <div style="font-family: Arial, sans-serif; padding: 16px; border-left: 4px solid ${colors.border}; background: ${colors.background}; color: #202124;">
   <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">${escapeHtml(message)}</div>

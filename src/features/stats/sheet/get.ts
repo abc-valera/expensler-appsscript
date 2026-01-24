@@ -1,7 +1,7 @@
-import type { MonthYear } from '../../../shared/month_year'
+import { formatDateToMonthYear } from '../../../shared/dateutil'
 
-export function getStatsSheet(monthYear: MonthYear): GoogleAppsScript.Spreadsheet.Sheet | null {
+export function getStatsSheet(month: Date): GoogleAppsScript.Spreadsheet.Sheet | null {
 	Logger.log('Attempting to get an existing stats sheet')
-	const statsSheetName = `${monthYear.toString()}-stats`
+	const statsSheetName = `${formatDateToMonthYear(month)}-stats`
 	return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(statsSheetName)
 }

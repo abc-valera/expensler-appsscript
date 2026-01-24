@@ -22,12 +22,7 @@
 		{ "rule": "*-dangle", "severity": "off", "fixable": true },
 		{ "rule": "*-newline", "severity": "off", "fixable": true },
 		{ "rule": "*quotes", "severity": "off", "fixable": true },
-		{ "rule": "*semi", "severity": "off", "fixable": true },
-
-		// NOTE: These are rules that clash with Appscript
-		{ "rule": "no-undef", "severity": "off" },
-		{ "rule": "no-unused-vars", "severity": "off" },
-		{ "rule": "unused-imports/no-unused-vars", "severity": "off" }
+		{ "rule": "*semi", "severity": "off", "fixable": true }
 	],
 
 	// Enable eslint for all supported languages

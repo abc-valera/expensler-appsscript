@@ -1,13 +1,32 @@
+import type { HTTPResponse, URLFetchRequest } from '../../../shared/fetchutil'
+import type { Account, MonobankAccountDetails } from '../../accounts/model'
+import type { Bank, MonobankBankDetails } from '../../bank/bank'
 import { mccMap } from '../model/mcc_map_en'
 import { Transaction } from '../model/model'
 
-/**
- * Fetches statements from Monobank API
- * https://api.monobank.ua/docs/index.html#tag/Kliyentski-personalni-dani
- */
+export function newMonobankRequest(account: Account, bank: Bank, fromMonth: Date, toMonth: Date): URLFetchRequest {
+	if (bank.details.provider !== 'monobank') {
+		throw new Error('Invalid bank details for Monobank')
+	}
+	const bankDetails = bank.details as MonobankBankDetails
 
-const MONOBANK_TOKEN = 'MONOBANK_TOKEN_PLACEHOLDER'
-const MONOBANK_ACCOUNT = 'MONOBANK_ACCOUNT_PLACEHOLDER'
+	if (account.details.provider !== 'monobank') {
+		throw new Error('Invalid account details for Monobank')
+	}
+	const accountDetails = account.details as MonobankAccountDetails
+
+	const from = Math.floor(new Date(fromMonth.getFullYear(), fromMonth.getMonth(), 1).getTime() / 1000)
+	const to = Math.floor(new Date(toMonth.getFullYear(), toMonth.getMonth() + 1, 0, 23, 59, 59).getTime() / 1000)
+	const url = `https://api.monobank.ua/personal/statement/${accountDetails.accountId}/${from}/${to}`
+
+	return {
+		url,
+		method: 'get',
+		headers: {
+			'X-Token': bankDetails.apiKey,
+		},
+	}
+}
 
 interface MonobankStatement {
 	id: string
@@ -30,44 +49,25 @@ interface MonobankStatement {
 	counterName: string
 }
 
-export function fetchMonobankTransactions(): Transaction[] {
-	const now = new Date()
-	const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-	const from = Math.floor(startOfMonth.getTime() / 1000)
-	const to = Math.floor(Date.now() / 1000)
-	const url = `https://api.monobank.ua/personal/statement/${MONOBANK_ACCOUNT}/${from}/${to}`
-
-	try {
-		const response = UrlFetchApp.fetch(url, {
-			method: 'get',
-			headers: {
-				'X-Token': MONOBANK_TOKEN,
-			},
-		})
-
-		const responseCode = response.getResponseCode()
-		if (responseCode !== 200) {
-			throw new Error(
-				`Request error: ${responseCode} - ${response.getContentText()}`,
-			)
-		}
-
-		const dtoStatements: MonobankStatement[] = JSON.parse(response.getContentText())
-
-		// Convert DTOs to Transaction models
-		const transactions: Transaction[] = dtoStatements.map(dto => new Transaction({
-			id: dto.id,
-			time: new Date(dto.time * 1000),
-			amount: dto.amount / 100,
-			vendor: dto.description,
-			category: mccMap[dto.mcc]?.shortDescription || 'Unknown',
-			comment: dto.comment,
-		}))
-
-		return transactions
+export function processMonobankResponse(account: Account, bank: Bank, response: HTTPResponse): Transaction[] {
+	const responseCode = response.getResponseCode()
+	if (responseCode !== 200) {
+		throw new Error(
+			`Request error: ${responseCode} - ${response.getContentText()}`,
+		)
 	}
-	catch (e: unknown) {
-		Logger.log(`Error details: ${e}`)
-		throw e
-	}
+
+	const dtoStatements: MonobankStatement[] = JSON.parse(response.getContentText())
+
+	const transactions: Transaction[] = dtoStatements.map(dto => new Transaction({
+		id: dto.id,
+		accountName: account.uniqueName,
+		time: new Date(dto.time * 1000),
+		amount: dto.amount / 100,
+		vendor: dto.description,
+		category: mccMap[dto.mcc]?.shortDescription || 'Unknown',
+		comment: dto.comment,
+	}))
+
+	return transactions
 }

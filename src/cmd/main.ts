@@ -1,16 +1,15 @@
+import { showAccounts } from '../features/accounts/ui_sidebar'
+import { showBankIntegrations } from '../features/bank/ui_sidebar'
 import { updateStatsSheet } from '../features/stats/sheet/update'
-import { fetchMonobankTransactions } from '../features/transactions/providers/monobank'
-import { updateWithNewTransactionsForCurrentMonth } from '../features/transactions/sheet/update_with_new_transactions'
-import { MonthYear } from '../shared/month_year'
+import { updateWithNewTransactionsForCurrentAndPreviousMonth } from '../features/transactions/sheet/update'
+import { parseMonthYearString, TransactionSheetNamePattern } from '../shared/dateutil'
 
-function addMonobankTransactions() {
-	updateWithNewTransactionsForCurrentMonth(fetchMonobankTransactions)
-}
-
-export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen) {
+export function onOpen() {
 	const ui = SpreadsheetApp.getUi()
 	ui.createMenu('Expensler💸')
-		.addItem('Add Monobank Transactions', addMonobankTransactions.name)
+		.addItem('Sync Transactions', updateWithNewTransactionsForCurrentAndPreviousMonth.name)
+		.addItem('Accounts', showAccounts.name)
+		.addItem('Bank Integrations', showBankIntegrations.name)
 		.addToUi()
 }
 
@@ -18,15 +17,14 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 	const editedSheet = e.range.getSheet()
 	const sheetName = editedSheet.getName()
 
-	const transactionSheetPattern = /^\d{4}-\d{2}$/
-	if (!transactionSheetPattern.test(sheetName)) {
+	if (!TransactionSheetNamePattern.test(sheetName)) {
 		return
 	}
 
 	try {
-		const monthYear = MonthYear.fromString(sheetName)
+		const monthDate = parseMonthYearString(sheetName)
 		Logger.log(`Transactions sheet ${sheetName} was edited, updating stats...`)
-		updateStatsSheet(monthYear)
+		updateStatsSheet(monthDate)
 		Logger.log(`Stats for sheet ${sheetName} updated successfully`)
 	}
 	catch (error) {

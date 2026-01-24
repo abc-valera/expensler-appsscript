@@ -1,7 +1,8 @@
-import type { MonthYear } from '../../../shared/month_year'
+import { formatDateToMonthYear } from '../../../shared/dateutil'
 
 const sheetHeaders = [
 	'ID',
+	'AccountName',
 	'Time',
 	'Amount',
 	'Vendor',
@@ -19,44 +20,48 @@ const colors = {
 	expense: '#ffefea',
 }
 
-export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.Spreadsheet.Sheet {
-	Logger.log(`Creating new sheet: ${monthYear.toString()}`)
+export function createTransactionsSheet(month: Date): GoogleAppsScript.Spreadsheet.Sheet {
+	Logger.log(`Creating new sheet: ${formatDateToMonthYear(month)}`)
 
 	const ss = SpreadsheetApp.getActiveSpreadsheet()
-	const sheet = ss.insertSheet(monthYear.toString())
+	const sheet = ss.insertSheet(formatDateToMonthYear(month))
 
 	sheet.appendRow(sheetHeaders)
 
 	// Set column widths
 	sheet.setColumnWidth(1, 150) // ID
-	sheet.setColumnWidth(2, 140) // Time
-	sheet.setColumnWidth(3, 120) // Amount
-	sheet.setColumnWidth(4, 300) // Vendor
-	sheet.setColumnWidth(5, 140) // Category
-	sheet.setColumnWidth(6, 200) // Comment
-	sheet.setColumnWidth(7, 150) // Ref
+	sheet.setColumnWidth(2, 200) // AccountName
+	sheet.setColumnWidth(3, 140) // Time
+	sheet.setColumnWidth(4, 120) // Amount
+	sheet.setColumnWidth(5, 300) // Vendor
+	sheet.setColumnWidth(6, 140) // Category
+	sheet.setColumnWidth(7, 200) // Comment
+	sheet.setColumnWidth(8, 150) // Ref
 
 	// Format data columns (apply to entire columns for future data)
 	// ID column (A) - centered
 	sheet.getRange('A:A').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
 
-	// Time column (B) - datetime format
-	sheet.getRange('B:B').setNumberFormat('dd.mm.yyyy hh:mm').setFontFamily('IBM Plex Mono').setFontSize(12)
+	// AccountName column (B) - centered
+	sheet.getRange('B:B').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
 
-	// Amount column (C) - currency format, right-aligned
-	sheet.getRange('C:C').setNumberFormat('#,##0.00 ₴').setHorizontalAlignment('right').setFontFamily('IBM Plex Mono').setFontSize(12)
+	// Time column (C) - datetime format
+	sheet.getRange('C:C').setNumberFormat('dd.mm.yyyy hh:mm').setFontFamily('IBM Plex Mono').setFontSize(12)
 
-	// Vendor column (D) - left-aligned, wrap text
-	sheet.getRange('D:D').setWrap(true).setVerticalAlignment('middle').setFontFamily('IBM Plex Mono').setFontSize(12)
+	// Amount column (D) - currency format, right-aligned
+	sheet.getRange('D:D').setNumberFormat('#,##0.00 ₴').setHorizontalAlignment('right').setFontFamily('IBM Plex Mono').setFontSize(12)
 
-	// Category column (E) - centered
-	sheet.getRange('E:E').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
+	// Vendor column (E) - left-aligned, wrap text
+	sheet.getRange('E:E').setWrap(true).setVerticalAlignment('middle').setFontFamily('IBM Plex Mono').setFontSize(12)
 
-	// Comment column (F) - left-aligned, wrap text
-	sheet.getRange('F:F').setWrap(true).setVerticalAlignment('middle').setFontFamily('IBM Plex Mono').setFontSize(12)
+	// Category column (F) - centered
+	sheet.getRange('F:F').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
 
-	// Ref column (G) - centered
-	sheet.getRange('G:G').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
+	// Comment column (G) - left-aligned, wrap text
+	sheet.getRange('G:G').setWrap(true).setVerticalAlignment('middle').setFontFamily('IBM Plex Mono').setFontSize(12)
+
+	// Ref column (H) - centered
+	sheet.getRange('H:H').setHorizontalAlignment('center').setFontFamily('IBM Plex Mono').setFontSize(12)
 
 	// Format headers (apply after column formatting to override)
 	const headerRange = sheet.getRange(1, 1, 1, columnsNumber)
@@ -75,7 +80,7 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 
 	// Rule for ref column not empty (highest priority)
 	const refRule = SpreadsheetApp.newConditionalFormatRule()
-		.whenFormulaSatisfied('=$G2<>""')
+		.whenFormulaSatisfied('=$H2<>""')
 		.setBackground(colors.ref)
 		.setRanges([dataRange])
 		.build()
@@ -83,7 +88,7 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 
 	// Rule for 'Money Transfer' category
 	const moneyTransferRule = SpreadsheetApp.newConditionalFormatRule()
-		.whenFormulaSatisfied('=$E2="Money Transfer"')
+		.whenFormulaSatisfied('=$F2="Money Transfer"')
 		.setBackground(colors.actionNeeded)
 		.setRanges([dataRange])
 		.build()
@@ -91,7 +96,7 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 
 	// Rule for 'Ignore' category
 	const ignoreRule = SpreadsheetApp.newConditionalFormatRule()
-		.whenFormulaSatisfied('=$E2="Ignore"')
+		.whenFormulaSatisfied('=$F2="Ignore"')
 		.setBackground(colors.ignore)
 		.setRanges([dataRange])
 		.build()
@@ -99,7 +104,7 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 
 	// Rule for amount > 0 (income)
 	const incomeRule = SpreadsheetApp.newConditionalFormatRule()
-		.whenFormulaSatisfied('=$C2>0')
+		.whenFormulaSatisfied('=$D2>0')
 		.setBackground(colors.income)
 		.setRanges([dataRange])
 		.build()
@@ -107,7 +112,7 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 
 	// Rule for amount < 0 (expense)
 	const expenseRule = SpreadsheetApp.newConditionalFormatRule()
-		.whenFormulaSatisfied('=$C2<0')
+		.whenFormulaSatisfied('=$D2<0')
 		.setBackground(colors.expense)
 		.setRanges([dataRange])
 		.build()
@@ -120,8 +125,9 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 	// Protect ID, Time, and Amount columns with warning
 	const columnsToProtect = [
 		{ column: 'A:A', name: 'ID' },
-		{ column: 'B:B', name: 'Time' },
-		{ column: 'C:C', name: 'Amount' },
+		{ column: 'B:B', name: 'AccountName' },
+		{ column: 'C:C', name: 'Time' },
+		{ column: 'D:D', name: 'Amount' },
 	]
 	columnsToProtect.forEach(({ column, name }) => {
 		const range = sheet.getRange(column)
@@ -129,7 +135,7 @@ export function createTransactionsSheet(monthYear: MonthYear): GoogleAppsScript.
 		protection.setWarningOnly(true)
 	})
 
-	Logger.log(`Created new sheet: ${monthYear.toString()}`)
+	Logger.log(`Created new sheet: ${formatDateToMonthYear(month)}`)
 
 	return sheet
 }

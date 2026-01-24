@@ -1,14 +1,14 @@
-import type { MonthYear } from '../../../shared/month_year'
 import type { CategoryAggregation } from '../model/category_aggregation'
 import type { VendorAggregation } from '../model/vendor_aggregation'
-import { getAllTransactions, getTransactionsForMonthYear } from '../../transactions/sheet/get_transactions'
+import { formatDateToMonthYear } from '../../../shared/dateutil'
+import { getAllTransactions, getTransactionsForMonth } from '../../transactions/sheet/get'
 import { createStatsSheet } from './create'
 import { getStatsSheet } from './get'
 
-export function updateStatsSheet(monthYear: MonthYear) {
-	let statsSheet = getStatsSheet(monthYear)
+export function updateStatsSheet(month: Date) {
+	let statsSheet = getStatsSheet(month)
 	if (!statsSheet) {
-		statsSheet = createStatsSheet(monthYear)
+		statsSheet = createStatsSheet(month)
 	}
 
 	// Clear existing data but keep headers
@@ -19,9 +19,9 @@ export function updateStatsSheet(monthYear: MonthYear) {
 		}
 	}
 
-	const currentMonthTransactions = getTransactionsForMonthYear(monthYear)
+	const currentMonthTransactions = getTransactionsForMonth(month)
 	if (currentMonthTransactions.size === 0) {
-		Logger.log(`No transactions found for month: ${monthYear.toString()}`)
+		Logger.log(`No transactions found for month: ${formatDateToMonthYear(month)}`)
 		return
 	}
 	const allTransactions = getAllTransactions()
@@ -108,5 +108,5 @@ export function updateStatsSheet(monthYear: MonthYear) {
 		statsSheet.getRange(2, 5, vendorRows.length, 3).setValues(vendorRows)
 	}
 
-	Logger.log(`Stats sheet updated: ${monthYear.toString()}-stats`)
+	Logger.log(`Stats sheet updated: ${formatDateToMonthYear(month)}-stats`)
 }
