@@ -1,6 +1,6 @@
 import type { HTTPResponse, URLFetchRequest } from '../../../shared/fetchutil'
 import type { Account } from '../../accounts/model'
-import type { Bank } from '../../bank/bank'
+import type { Bank } from '../../bank/model'
 
 export type TransactionRequestCreator = (account: Account, bank: Bank, fromMonth: Date, toMonth: Date) => URLFetchRequest
 export type TransactionsResponseProcessor = (account: Account, bank: Bank, response: HTTPResponse) => Transaction[]

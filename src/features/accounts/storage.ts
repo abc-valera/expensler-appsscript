@@ -1,5 +1,5 @@
-import type { AccountDetails } from './model'
-import { Account, MonobankAccountDetails, PrivatbankAccountDetails, RaiffaisenAccountDetails } from './model'
+import type { AccountProvider } from './model'
+import { Account, MonobankAccountProvider, PrivatbankAccountProvider, RaiffaisenAccountProvider } from './model'
 
 const PROPERTY_KEY = 'accounts'
 
@@ -8,15 +8,15 @@ export function saveAccounts(accounts: Account[]): void {
 	PropertiesService.getDocumentProperties().setProperty(PROPERTY_KEY, serialized)
 }
 
-function deserializeAccountDetails(details: any): AccountDetails {
+function deserializeAccountDetails(details: any): AccountProvider {
 	const provider = details.provider
 	switch (provider) {
 		case 'monobank':
-			return new MonobankAccountDetails({ accountId: details.accountId })
+			return new MonobankAccountProvider({ accountId: details.accountId })
 		case 'privatbank':
-			return new PrivatbankAccountDetails()
+			return new PrivatbankAccountProvider()
 		case 'raiffaisen':
-			return new RaiffaisenAccountDetails()
+			return new RaiffaisenAccountProvider()
 		default:
 			throw new Error(`Unknown provider: ${provider}`)
 	}
@@ -36,8 +36,7 @@ export function loadAccounts(): Account[] {
 				name: item.uniqueName,
 				currency: item.currency,
 				addedAt: new Date(item.addedAt),
-				provider: details.provider,
-				details,
+				accountProvider: details,
 			})
 		})
 	}
@@ -48,7 +47,7 @@ export function loadAccounts(): Account[] {
 }
 
 function accountsMatch(a: Account, b: Account): boolean {
-	return a.uniqueName === b.uniqueName && a.details.provider === b.details.provider
+	return a.uniqueName === b.uniqueName && a.provider.bankProvider === b.provider.bankProvider
 }
 
 export function addAccount(account: Account): void {

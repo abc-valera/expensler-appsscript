@@ -1,29 +1,36 @@
 import type { HTTPResponse, URLFetchRequest } from '../../../shared/fetchutil'
-import type { Account, MonobankAccountDetails } from '../../accounts/model'
-import type { Bank, MonobankBankDetails } from '../../bank/bank'
+import type { Account, MonobankAccountProvider } from '../../accounts/model'
+import type { Bank, MonobankBankProvider } from '../../bank/model'
 import { mccMap } from '../model/mcc_map_en'
 import { Transaction } from '../model/model'
 
 export function newMonobankRequest(account: Account, bank: Bank, fromMonth: Date, toMonth: Date): URLFetchRequest {
-	if (bank.details.provider !== 'monobank') {
+	if (bank.provider.provider !== 'monobank') {
 		throw new Error('Invalid bank details for Monobank')
 	}
-	const bankDetails = bank.details as MonobankBankDetails
+	const bankDetails = bank.provider as MonobankBankProvider
 
-	if (account.details.provider !== 'monobank') {
+	if (account.provider.bankProvider !== 'monobank') {
 		throw new Error('Invalid account details for Monobank')
 	}
-	const accountDetails = account.details as MonobankAccountDetails
+	const accountDetails = account.provider as MonobankAccountProvider
+
+	if (!accountDetails.details?.accountId) {
+		throw new Error('Monobank account ID is missing')
+	}
+	if (!bankDetails.details?.apiKey) {
+		throw new Error('Monobank API key is missing')
+	}
 
 	const from = Math.floor(new Date(fromMonth.getFullYear(), fromMonth.getMonth(), 1).getTime() / 1000)
 	const to = Math.floor(new Date(toMonth.getFullYear(), toMonth.getMonth() + 1, 0, 23, 59, 59).getTime() / 1000)
-	const url = `https://api.monobank.ua/personal/statement/${accountDetails.accountId}/${from}/${to}`
+	const url = `https://api.monobank.ua/personal/statement/${accountDetails.details.accountId}/${from}/${to}`
 
 	return {
 		url,
 		method: 'get',
 		headers: {
-			'X-Token': bankDetails.apiKey,
+			'X-Token': bankDetails.details.apiKey,
 		},
 	}
 }

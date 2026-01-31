@@ -1,4 +1,4 @@
-import { BankProvider } from '../bank/bank'
+import { BankProviderName } from '../bank/model'
 
 // The Entity–attribute–value model pattern is used here
 // to represent different bank providers in a flexible way.
@@ -9,15 +9,14 @@ export class Account {
 	public readonly uniqueName: string
 	public readonly currency: string
 	public readonly addedAt: Date
+	public readonly provider: AccountProvider
 	public readonly isValid: boolean
-	public readonly details: AccountDetails
 
 	constructor(input: {
 		name: string
 		currency: string
 		addedAt: Date
-		provider: BankProvider
-		details: AccountDetails
+		accountProvider: AccountProvider
 	}) {
 		if (!input.currency) {
 			throw new Error('Account currency is missing')
@@ -39,33 +38,38 @@ export class Account {
 		// This should be done on creation and on further requests too.
 		this.isValid = true
 
-		if (!input.details) {
+		if (!input.accountProvider) {
 			throw new Error('Account details are missing')
 		}
-		this.details = input.details
+		this.provider = input.accountProvider
 	}
 }
 
-export type AccountDetails = MonobankAccountDetails
-	| PrivatbankAccountDetails
-	| RaiffaisenAccountDetails
+export type AccountProvider = MonobankAccountProvider
+	| PrivatbankAccountProvider
+	| RaiffaisenAccountProvider
 
-export class MonobankAccountDetails {
-	public readonly provider: BankProvider = BankProvider.Monobank
-	public readonly accountId: string
+export class MonobankAccountProvider {
+	public readonly bankProvider: BankProviderName = BankProviderName.Monobank
+	public readonly details?: { accountId: string }
 
-	constructor(input: { accountId: string }) {
-		if (!input.accountId) {
+	constructor(details?: { accountId: string }) {
+		if (details == null) {
+			return
+		}
+
+		if (!details.accountId) {
 			throw new Error('Monobank accountId is missing')
 		}
-		this.accountId = input.accountId
+
+		this.details = details
 	}
 }
 
-export class PrivatbankAccountDetails {
-	public readonly provider: BankProvider = BankProvider.Privatbank
+export class PrivatbankAccountProvider {
+	public readonly bankProvider: BankProviderName = BankProviderName.Privatbank
 }
 
-export class RaiffaisenAccountDetails {
-	public readonly provider: BankProvider = BankProvider.Raiffaisen
+export class RaiffaisenAccountProvider {
+	public readonly bankProvider: BankProviderName = BankProviderName.Raiffaisen
 }

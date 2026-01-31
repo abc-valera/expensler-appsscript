@@ -48,7 +48,7 @@ export default [
 			nodeResolve(),
 			commonjs(),
 			typescript(),
-			string({ include: '**/*.html' }),
+			string({ include: ['**/*.css', 'src/**/*.client.js'] }),
 		],
 	},
 ]

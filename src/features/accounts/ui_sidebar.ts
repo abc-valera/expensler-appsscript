@@ -1,11 +1,11 @@
-import { BankProvider } from '../bank/bank'
+import { BankProviderName } from '../bank/model'
 import { loadBanks } from '../bank/storage'
-import { Account, MonobankAccountDetails, PrivatbankAccountDetails, RaiffaisenAccountDetails } from './model'
+import { Account, MonobankAccountProvider, PrivatbankAccountProvider, RaiffaisenAccountProvider } from './model'
 import { addAccount, deleteAccount, loadAccounts } from './storage'
-import uiSidebarHtml from './ui_sidebar.html'
+import { AccountsSidebarHtml } from './ui_sidebar_html'
 
 export function showAccounts() {
-	const htmlOutput = HtmlService.createHtmlOutput(uiSidebarHtml)
+	const htmlOutput = HtmlService.createHtmlOutput(AccountsSidebarHtml() as string)
 		.setTitle('Accounts')
 		.setWidth(300)
 
@@ -25,7 +25,7 @@ export function deleteAccountDialog() {
 		return
 	}
 
-	const accountList = accounts.map((account, i) => `${i + 1}. ${account.uniqueName} (${account.details.provider})`).join('\n')
+	const accountList = accounts.map((account, i) => `${i + 1}. ${account.uniqueName} (${account.provider.bankProvider})`).join('\n')
 	const prompt = ui.prompt(
 		'Delete Account',
 		`Select account to delete:\n${accountList}\n\nEnter number:`,
@@ -57,14 +57,15 @@ export function deleteAccountDialog() {
 
 export function addAccountDialog() {
 	const ui = SpreadsheetApp.getUi()
-	const banks = loadBanks()
+	const banksMap = loadBanks()
+	const banks = Array.from(banksMap.values())
 
 	if (banks.length === 0) {
 		ui.alert('No Banks', 'Please configure a bank integration first.', ui.ButtonSet.OK)
 		return
 	}
 
-	const bankList = banks.map((bank, i) => `${i + 1}. ${bank.details.provider}`).join('\n')
+	const bankList = banks.map((bank, i) => `${i + 1}. ${bank.provider.provider}`).join('\n')
 	const bankPrompt = ui.prompt(
 		'Add Account',
 		`Select bank:\n${bankList}\n\nEnter number:`,
@@ -134,15 +135,14 @@ export function addAccountDialog() {
 	// TODO: before adding a new account check if it's valid
 
 	try {
-		const provider = selectedBank.details.provider
+		const provider = selectedBank.provider.provider
 		const details = createAccountDetails(provider, accountId)
 
 		const account = new Account({
 			name: displayName,
 			currency,
 			addedAt: new Date(),
-			provider,
-			details,
+			accountProvider: details,
 		})
 		addAccount(account)
 		ui.alert('Success', `Account "${displayName}" added successfully!`, ui.ButtonSet.OK)
@@ -152,14 +152,14 @@ export function addAccountDialog() {
 	}
 }
 
-function createAccountDetails(provider: BankProvider, accountId: string) {
+function createAccountDetails(provider: BankProviderName, accountId: string) {
 	switch (provider) {
-		case BankProvider.Monobank:
-			return new MonobankAccountDetails({ accountId })
-		case BankProvider.Privatbank:
-			return new PrivatbankAccountDetails()
-		case BankProvider.Raiffaisen:
-			return new RaiffaisenAccountDetails()
+		case BankProviderName.Monobank:
+			return new MonobankAccountProvider({ accountId })
+		case BankProviderName.Privatbank:
+			return new PrivatbankAccountProvider()
+		case BankProviderName.Raiffaisen:
+			return new RaiffaisenAccountProvider()
 		default:
 			throw new Error(`Unknown provider: ${provider}`)
 	}
