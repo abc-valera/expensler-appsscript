@@ -1,6 +1,6 @@
-import { showAccounts } from '../features/accounts/ui_sidebar'
+import { showAccounts } from '../features/accounts/index'
+import { BankSidebar, disableBankIntegration, enableBankIntegration, getBanksData, showErrorMessage, showSuccessMessage } from '../features/bank/index'
 import { saveInitialBanksIfNotExist } from '../features/bank/storage'
-import { BankSidebar, enableBankIntegration, showErrorMessage, showSuccessMessage } from '../features/bank/ui_sidebar_html'
 import { updateStatsSheet } from '../features/stats/sheet/update'
 import { updateWithNewTransactionsForCurrentAndPreviousMonth } from '../features/transactions/sheet/update'
 import { parseMonthYearString, TransactionSheetNamePattern } from '../shared/dateutil'
@@ -42,4 +42,11 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 }
 
 // Re-export functions needed by client-side code
-export { enableBankIntegration, showErrorMessage, showSuccessMessage }
+// TODO: check if this can be automated somehow
+export {
+	disableBankIntegration,
+	enableBankIntegration,
+	getBanksData,
+	showErrorMessage,
+	showSuccessMessage,
+}

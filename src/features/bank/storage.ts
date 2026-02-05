@@ -1,15 +1,19 @@
-import { Bank, BankProviderName, MonobankBankProvider, PrivatbankBankProvider, RaiffaisenBankProvider } from './model'
+import type { BankProvider } from './model'
+import { Bank, BankProviderName } from './model'
+import { MonobankDetails } from './providers/monobank'
+import { PrivatbankDetails } from './providers/privatbank'
+import { RaiffaisenDetails } from './providers/raiffeisen'
 
 const PROPERTY_KEY = 'banks'
 
 const initialBanks: Map<BankProviderName, Bank> = new Map([
-	[BankProviderName.Monobank, new Bank({ provider: new MonobankBankProvider() })],
-	[BankProviderName.Privatbank, new Bank({ provider: new PrivatbankBankProvider() })],
-	[BankProviderName.Raiffaisen, new Bank({ provider: new RaiffaisenBankProvider() })],
+	[BankProviderName.Monobank, new Bank({ name: BankProviderName.Monobank, details: undefined })],
+	[BankProviderName.Privatbank, new Bank({ name: BankProviderName.Privatbank, details: undefined })],
+	[BankProviderName.Raiffeisen, new Bank({ name: BankProviderName.Raiffeisen, details: undefined })],
 ])
 
 export function saveInitialBanksIfNotExist(): void {
-	const existingBanks = loadBanks()
+	const existingBanks = readBanks()
 
 	for (const [providerName, bank] of initialBanks) {
 		if (!existingBanks.has(providerName)) {
@@ -21,38 +25,8 @@ export function saveInitialBanksIfNotExist(): void {
 }
 
 export function saveBank(bank: Bank): void {
-	const banks = loadBanks()
-	banks.set(bank.provider.provider, bank)
-	saveBanks(banks)
-}
-
-export function loadBanks(): Map<BankProviderName, Bank> {
-	const serialized = PropertiesService.getDocumentProperties().getProperty(PROPERTY_KEY)
-	if (!serialized) {
-		return new Map()
-	}
-
-	try {
-		const data = JSON.parse(serialized) as Record<string, Record<string, unknown>>
-		const banks = new Map<BankProviderName, Bank>()
-
-		for (const [providerName, bankData] of Object.entries(data)) {
-			const provider = providerName as BankProviderName
-			const details = deserializeBank(provider, bankData)
-			banks.set(provider, new Bank({ provider: details }))
-		}
-
-		return banks
-	}
-	catch (error) {
-		Logger.log(`Error loading banks: ${error}`)
-		return new Map()
-	}
-}
-
-export function deleteBank(provider: BankProviderName): void {
-	const banks = loadBanks()
-	banks.delete(provider)
+	const banks = readBanks()
+	banks.set(bank.providerName, bank)
 	saveBanks(banks)
 }
 
@@ -65,18 +39,54 @@ function saveBanks(banks: Map<BankProviderName, Bank>): void {
 	PropertiesService.getDocumentProperties().setProperty(PROPERTY_KEY, serialized)
 }
 
-function deserializeBank(
-	provider: BankProviderName,
-	data: Record<string, unknown>,
-): MonobankBankProvider | PrivatbankBankProvider | RaiffaisenBankProvider {
-	switch (provider) {
+function deserializeBankProvider(data: Record<string, unknown>): BankProvider {
+	const name = data.name as BankProviderName
+	const detailsData = data.details as Record<string, unknown> | undefined
+
+	switch (name) {
 		case BankProviderName.Monobank:
-			return MonobankBankProvider.NewFromUnknown(data)
+			return {
+				name: BankProviderName.Monobank,
+				details: detailsData ? MonobankDetails.NewFromUnknown(detailsData) : undefined,
+			}
 		case BankProviderName.Privatbank:
-			return new PrivatbankBankProvider()
-		case BankProviderName.Raiffaisen:
-			return new RaiffaisenBankProvider()
+			return {
+				name: BankProviderName.Privatbank,
+				details: detailsData ? PrivatbankDetails.NewFromUnknown(detailsData) : undefined,
+			}
+		case BankProviderName.Raiffeisen:
+			return {
+				name: BankProviderName.Raiffeisen,
+				details: detailsData ? RaiffaisenDetails.NewFromUnknown(detailsData) : undefined,
+			}
 		default:
-			throw new Error(`Unsupported bank provider: ${provider}`)
+			throw new Error(`Unsupported bank provider: ${name}`)
 	}
+}
+
+export function readBanks(): Map<BankProviderName, Bank> {
+	const serialized = PropertiesService.getDocumentProperties().getProperty(PROPERTY_KEY)
+	if (!serialized) {
+		return new Map()
+	}
+
+	try {
+		const data = JSON.parse(serialized) as Record<string, Record<string, unknown>>
+		const banks = new Map<BankProviderName, Bank>()
+
+		for (const [providerName, providerData] of Object.entries(data)) {
+			const provider = deserializeBankProvider(providerData)
+			banks.set(providerName as BankProviderName, new Bank(provider))
+		}
+
+		return banks
+	}
+	catch (error) {
+		Logger.log(`Error loading banks: ${error}`)
+		return new Map()
+	}
+}
+
+export function readBanksArray() {
+	return Array.from(readBanks().values())
 }

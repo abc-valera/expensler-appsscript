@@ -5,10 +5,10 @@ import { mccMap } from '../model/mcc_map_en'
 import { Transaction } from '../model/model'
 
 export function newMonobankRequest(account: Account, bank: Bank, fromMonth: Date, toMonth: Date): URLFetchRequest {
-	if (bank.provider.provider !== 'monobank') {
+	if (bank.providerName !== 'monobank') {
 		throw new Error('Invalid bank details for Monobank')
 	}
-	const bankDetails = bank.provider as MonobankBankProvider
+	const bankDetails = bank.providerName as MonobankBankProvider
 
 	if (account.provider.bankProvider !== 'monobank') {
 		throw new Error('Invalid account details for Monobank')

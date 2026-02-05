@@ -2,11 +2,11 @@ import type { URLFetchRequest } from '../../../shared/fetchutil'
 import type { Transaction, TransactionsResponseProcessor } from '../model/model'
 import { loadAccounts } from '../../accounts/storage'
 import { BankProviderName } from '../../bank/model'
-import { loadBanks } from '../../bank/storage'
+import { readBanks } from '../../bank/storage'
 import { newMonobankRequest, processMonobankResponse } from '../providers/monobank'
 
 export function getTransactions(fromDate: Date, toDate: Date): Transaction[] {
-	const banksMap = loadBanks()
+	const banksMap = readBanks()
 	const accounts = loadAccounts()
 
 	const requests: URLFetchRequest[] = []
@@ -25,8 +25,8 @@ export function getTransactions(fromDate: Date, toDate: Date): Transaction[] {
 				break
 			case BankProviderName.Privatbank:
 				throw new Error('Privatbank isnt supported yet')
-			case BankProviderName.Raiffaisen:
-				throw new Error('Raiffaisen isnt supported yet')
+			case BankProviderName.Raiffeisen:
+				throw new Error('Raiffeisen isnt supported yet')
 			default:
 				throw new Error(`Unsupported bank provider: ${account.provider.bankProvider}`)
 		}

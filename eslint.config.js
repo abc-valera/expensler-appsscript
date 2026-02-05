@@ -6,10 +6,5 @@ export default antfu({
 	},
 	rules: {
 		'jsonc/sort-keys': 'off',
-
-		// TODO: maybe enable these rules
-		'no-undef': 'off',
-		'no-unused-vars': 'off',
-		'unused-imports/no-unused-vars': 'off',
 	},
 })

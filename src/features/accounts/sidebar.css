@@ -1,0 +1,84 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background: linear-gradient(to bottom right, #0f766e 0%, #14b8a6 50%, #2dd4bf 100%);
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.accounts-container {
+	background: rgba(255, 255, 255, 0.95);
+	padding: 50px;
+	border-radius: 15px;
+	box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+	text-align: center;
+	min-width: 320px;
+	max-width: 500px;
+	border: 3px solid #14b8a6;
+}
+
+.accounts-container h1 {
+	color: #0f766e;
+	font-size: 36px;
+	margin-bottom: 25px;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+}
+
+.accounts-count-display {
+	background: #0f766e;
+	color: #ccfbf1;
+	font-size: 56px;
+	padding: 25px;
+	margin: 25px 0;
+	border-radius: 10px;
+	font-weight: 800;
+	box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.2);
+	border: 2px solid #14b8a6;
+	font-family: 'Courier New', monospace;
+}
+
+.accounts-count-label {
+	display: block;
+	font-size: 14px;
+	margin-bottom: 8px;
+	color: #ccfbf1;
+	font-weight: 600;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+}
+
+.accounts-button {
+	background: #14b8a6;
+	color: white;
+	border: 2px solid #0f766e;
+	padding: 12px 35px;
+	font-size: 16px;
+	border-radius: 8px;
+	cursor: pointer;
+	font-weight: 700;
+	transition: all 0.2s ease;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+}
+
+.accounts-button:hover {
+	background: #0f766e;
+	border-color: #14b8a6;
+	transform: scale(1.05);
+	box-shadow: 0 6px 18px rgba(20, 184, 166, 0.6);
+}
+
+.accounts-button:active {
+	transform: scale(0.98);
+	box-shadow: 0 2px 8px rgba(20, 184, 166, 0.4);
+}

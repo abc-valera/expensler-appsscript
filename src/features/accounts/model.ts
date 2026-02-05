@@ -71,5 +71,5 @@ export class PrivatbankAccountProvider {
 }
 
 export class RaiffaisenAccountProvider {
-	public readonly bankProvider: BankProviderName = BankProviderName.Raiffaisen
+	public readonly bankProvider: BankProviderName = BankProviderName.Raiffeisen
 }
