@@ -1,17 +1,10 @@
-import type { HTTPResponse, URLFetchRequest } from '../../../shared/fetchutil'
-import type { Account } from '../../accounts/model'
-import type { Bank } from '../../bank/model'
-
-export type TransactionRequestCreator = (account: Account, bank: Bank, fromMonth: Date, toMonth: Date) => URLFetchRequest
-export type TransactionsResponseProcessor = (account: Account, bank: Bank, response: HTTPResponse) => Transaction[]
-
 export class Transaction {
 	public readonly id: string
 	public readonly accountName: string
 	public readonly time: Date
 	public readonly amount: number
-	public readonly vendor: string
 	public readonly category: string
+	public readonly vendor: string
 	public readonly comment?: string
 	public ref?: string
 
@@ -20,8 +13,8 @@ export class Transaction {
 		accountName: string
 		time: Date
 		amount: number
-		vendor: string
 		category: string
+		vendor: string
 		comment?: string
 		ref?: string
 	}) {
@@ -45,15 +38,12 @@ export class Transaction {
 		}
 		this.amount = input.amount
 
-		if (!input.vendor) {
-			throw new Error('Transaction vendor is missing')
-		}
-		this.vendor = input.vendor
-
 		if (!input.category) {
 			throw new Error('Transaction category is missing')
 		}
 		this.category = input.category
+
+		this.vendor = input.vendor
 
 		this.comment = input.comment
 

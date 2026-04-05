@@ -1,19 +1,17 @@
-import { showAccounts } from '../features/accounts/index'
-import { BankSidebar, disableBankIntegration, enableBankIntegration, getBanksData, showErrorMessage, showSuccessMessage } from '../features/bank/index'
-import { saveInitialBanksIfNotExist } from '../features/bank/storage'
-import { updateStatsSheet } from '../features/stats/sheet/update'
-import { updateWithNewTransactionsForCurrentAndPreviousMonth } from '../features/transactions/sheet/update'
-import { parseMonthYearString, TransactionSheetNamePattern } from '../shared/dateutil'
+import { addAccount, deleteAccount, readAccountsArray } from '../features/accounts/data/property_storage'
+import { syncTransactionsForLast30days } from '../features/accounts/usecase/sync_transactions'
+import { AccountsSidebar } from '../features/accounts/view/sidebar_show'
+import { DebugHelloSidebar } from '../features/debug/hello_sidebar_show'
+import { updateStatsSheet } from '../features/stats/data/sheet_update'
+import { sheetNamePattern } from '../shared/dateutil'
 
 export function onOpen() {
-	saveInitialBanksIfNotExist()
-
 	const ui = SpreadsheetApp.getUi()
 	ui.createMenu('Expensler💸')
-		.addItem('Sync Transactions', updateWithNewTransactionsForCurrentAndPreviousMonth.name)
-		.addItem('Accounts', showAccounts.name)
-		.addItem('Bank Integrations', BankSidebar.name)
+		.addItem('Sync Transactions', syncTransactionsForLast30days.name)
+		.addItem('Accounts', AccountsSidebar.name)
 		.addItem('Debug: Show Properties', debugShowProperties.name)
+		.addItem('Debug: Show Dummy Sidebar', DebugHelloSidebar.name)
 		.addToUi()
 }
 
@@ -26,14 +24,13 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 	const editedSheet = e.range.getSheet()
 	const sheetName = editedSheet.getName()
 
-	if (!TransactionSheetNamePattern.test(sheetName)) {
+	if (!sheetNamePattern.test(sheetName)) {
 		return
 	}
 
 	try {
-		const monthDate = parseMonthYearString(sheetName)
 		Logger.log(`Transactions sheet ${sheetName} was edited, updating stats...`)
-		updateStatsSheet(monthDate)
+		updateStatsSheet(sheetName)
 		Logger.log(`Stats for sheet ${sheetName} updated successfully`)
 	}
 	catch (error) {
@@ -42,11 +39,9 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 }
 
 // Re-export functions needed by client-side code
-// TODO: check if this can be automated somehow
 export {
-	disableBankIntegration,
-	enableBankIntegration,
-	getBanksData,
-	showErrorMessage,
-	showSuccessMessage,
+	addAccount,
+	DebugHelloSidebar,
+	deleteAccount,
+	readAccountsArray,
 }

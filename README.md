@@ -24,6 +24,17 @@ npm run authenticate
 npm run deploy
 ```
 
+### Notes
+
+To remove all document properties:
+
+```javascript
+function deleteAllDocumentProperties() {
+	PropertiesService.getDocumentProperties().deleteAllProperties()
+	Logger.log('All document properties deleted.')
+}
+```
+
 The logs can be seen in the Executions page of the Apps Script dashboard: https://script.google.com/home/executions
 
 ### Deployment explanation
