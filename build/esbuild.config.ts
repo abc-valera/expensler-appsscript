@@ -5,6 +5,8 @@ import { solidPlugin } from 'esbuild-plugin-solid'
 import { sidebarPlugin } from './plugins/sidebars'
 import { stripExports } from './plugins/strip-exports'
 
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'))
+
 export const tsConfig: BuildOptions = {
 	entryPoints: ['src/cmd/main.ts'],
 	outfile: 'output/main.js',
@@ -13,6 +15,9 @@ export const tsConfig: BuildOptions = {
 	target: 'es2016',
 	platform: 'node',
 	resolveExtensions: ['.ts', '.json'],
+	define: {
+		EXPENSLER_VERSION: JSON.stringify(pkg.version),
+	},
 	plugins: [
 		stripExports(),
 	],

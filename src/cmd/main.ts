@@ -1,11 +1,14 @@
 import { addAccount, deleteAccount, readAccountsArray } from '../features/accounts/data/property_storage'
 import { syncTransactionsForLast30days } from '../features/accounts/usecase/sync_transactions'
 import { AccountsSidebar } from '../features/accounts/view/sidebar_show'
+import { createOrUpdateDashboardSheet } from '../features/dashboard/dashboard'
 import { DebugHelloSidebar } from '../features/debug/hello_sidebar_show'
 import { updateStatsSheet } from '../features/stats/data/sheet_update'
 import { sheetNamePattern } from '../shared/dateutil'
 
 export function onOpen() {
+	createOrUpdateDashboardSheet()
+
 	const ui = SpreadsheetApp.getUi()
 	ui.createMenu('Expensler💸')
 		.addItem('Sync Transactions', syncTransactionsForLast30days.name)
