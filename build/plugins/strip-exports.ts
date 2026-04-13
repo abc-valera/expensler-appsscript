@@ -1,6 +1,7 @@
 import type { Plugin } from 'esbuild'
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 
 // stripExports removes all export statements from the final build output as required by Google Apps Script
 export function stripExports(): Plugin {

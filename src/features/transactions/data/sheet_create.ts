@@ -141,4 +141,3 @@ export function createTransactionsSheet(monthYear: string): GoogleAppsScript.Spr
 
 	return sheet
 }
-

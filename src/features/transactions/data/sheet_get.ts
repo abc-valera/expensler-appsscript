@@ -6,7 +6,6 @@ export function parseRowIntoTransaction(row: unknown[]): Transaction {
 		throw new Error('Row must have at least 8 columns (ID, AccountName, Time, Amount, Vendor, Category, Comment, Ref)')
 	}
 
-
 	const accountNameValue = row[1]
 	if (!accountNameValue) {
 		throw new Error('AccountName is missing in row and no fallback provided')
