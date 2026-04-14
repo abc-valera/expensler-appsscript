@@ -19,8 +19,8 @@ export function createTransactionsSheet(monthYear: string): GoogleAppsScript.Spr
 
 	// Set column widths
 	sheet.setColumnWidth(getColIndex('id'), 150)
-	sheet.setColumnWidth(getColIndex('accountName'), 200)
-	sheet.setColumnWidth(getColIndex('time'), 140)
+	sheet.setColumnWidth(getColIndex('accountName'), 150)
+	sheet.setColumnWidth(getColIndex('time'), 225)
 	sheet.setColumnWidth(getColIndex('amount'), 120)
 	sheet.setColumnWidth(getColIndex('vendor'), 200)
 	sheet.setColumnWidth(getColIndex('category'), 300)

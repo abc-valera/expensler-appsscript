@@ -27,13 +27,13 @@ export function createStatsSheet(month: string): GoogleAppsScript.Spreadsheet.Sh
 	sheet.appendRow(sheetHeaders)
 
 	// Set column widths
-	sheet.setColumnWidth(getCategoryColIndex('category'), 200)
+	sheet.setColumnWidth(getCategoryColIndex('category'), 250)
 	sheet.setColumnWidth(getCategoryColIndex('totalAmount'), 150)
-	sheet.setColumnWidth(getCategoryColIndex('transactionCount'), 150)
+	sheet.setColumnWidth(getCategoryColIndex('transactionCount'), 50)
 	sheet.setColumnWidth(vendorColOffset - 1, 50) // Spacer column (D)
-	sheet.setColumnWidth(getVendorColIndex('vendor'), 200)
+	sheet.setColumnWidth(getVendorColIndex('vendor'), 250)
 	sheet.setColumnWidth(getVendorColIndex('totalAmount'), 150)
-	sheet.setColumnWidth(getVendorColIndex('transactionCount'), 150)
+	sheet.setColumnWidth(getVendorColIndex('transactionCount'), 50)
 	sheet.setColumnWidth(getTotalColIndex('totalSpent') - 1, 50) // Spacer column (H)
 	sheet.setColumnWidth(getTotalColIndex('totalSpent'), 150)
 

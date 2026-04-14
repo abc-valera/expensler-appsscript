@@ -5,13 +5,13 @@ import type { VendorAggregation } from '../model/vendor_aggregation'
 export const categoryColNames = {
 	category: 'Category',
 	totalAmount: 'Total Amount',
-	transactionCount: 'Transaction Count',
+	transactionCount: 'Count',
 } as const satisfies Record<keyof CategoryAggregation, string>
 
 export const vendorColNames = {
 	vendor: 'Vendor',
 	totalAmount: 'Total Amount',
-	transactionCount: 'Transaction Count',
+	transactionCount: 'Count',
 } as const satisfies Record<keyof VendorAggregation, string>
 
 export const totalColNames = {

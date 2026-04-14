@@ -89,8 +89,5 @@ export function createOrUpdateDashboardSheet(): void {
 }
 
 function getAppVersion(): string {
-	// Read version injected at build time via EXPENSLER_VERSION env variable,
-	// falling back to 'dev' if not set.
-	const version = typeof EXPENSLER_VERSION !== 'undefined' ? EXPENSLER_VERSION : 'dev'
-	return version
+	return typeof EXPENSLER_TAG_VERSION !== 'undefined' ? EXPENSLER_TAG_VERSION : EXPENSLER_COMMIT_VERSION
 }

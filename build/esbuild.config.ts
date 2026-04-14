@@ -1,11 +1,18 @@
 import type { BuildOptions } from 'esbuild'
+import { execSync } from 'node:child_process'
 import fs, { rmSync } from 'node:fs'
+import process from 'node:process'
 import { build } from 'esbuild'
 import { solidPlugin } from 'esbuild-plugin-solid'
 import { sidebarPlugin } from './plugins/sidebars'
 import { stripExports } from './plugins/strip-exports'
 
-const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'))
+function getBuildVersion(): string {
+	const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
+	const commit = execSync('git rev-parse --short=4 HEAD').toString().trim()
+	const dirty = execSync('git status --porcelain').toString().trim() !== '' ? 'dirty' : 'clean'
+	return `${branch}:${commit} (${dirty})`
+}
 
 export const tsConfig: BuildOptions = {
 	entryPoints: ['src/cmd/main.ts'],
@@ -16,7 +23,8 @@ export const tsConfig: BuildOptions = {
 	platform: 'node',
 	resolveExtensions: ['.ts', '.json'],
 	define: {
-		EXPENSLER_VERSION: JSON.stringify(pkg.version),
+		EXPENSLER_TAG_VERSION: JSON.stringify(process.env.EXPENSLER_TAG_VERSION ?? getBuildVersion()),
+		EXPENSLER_COMMIT_VERSION: JSON.stringify(getBuildVersion()),
 	},
 	plugins: [
 		stripExports(),

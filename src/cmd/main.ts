@@ -2,7 +2,6 @@ import { addAccount, deleteAccount, readAccountsArray } from '../features/accoun
 import { syncTransactionsForLast30days } from '../features/accounts/usecase/sync_transactions'
 import { AccountsSidebar } from '../features/accounts/view/sidebar_show'
 import { createOrUpdateDashboardSheet } from '../features/dashboard/dashboard'
-import { DebugHelloSidebar } from '../features/debug/hello_sidebar_show'
 import { updateStatsSheet } from '../features/stats/data/sheet_update'
 import { sheetNamePattern } from '../shared/dateutil'
 
@@ -13,14 +12,7 @@ export function onOpen() {
 	ui.createMenu('Expensler💸')
 		.addItem('Sync Transactions', syncTransactionsForLast30days.name)
 		.addItem('Accounts', AccountsSidebar.name)
-		.addItem('Debug: Show Properties', debugShowProperties.name)
-		.addItem('Debug: Show Dummy Sidebar', DebugHelloSidebar.name)
 		.addToUi()
-}
-
-export function debugShowProperties() {
-	const props = PropertiesService.getDocumentProperties().getProperties()
-	Logger.log(JSON.stringify(props, null, 2))
 }
 
 export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
@@ -44,7 +36,6 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 // Re-export functions needed by client-side code
 export {
 	addAccount,
-	DebugHelloSidebar,
 	deleteAccount,
 	readAccountsArray,
 }
