@@ -29,11 +29,11 @@ export function createStatsSheet(month: string): GoogleAppsScript.Spreadsheet.Sh
 	// Set column widths
 	sheet.setColumnWidth(getCategoryColIndex('category'), 250)
 	sheet.setColumnWidth(getCategoryColIndex('totalAmount'), 150)
-	sheet.setColumnWidth(getCategoryColIndex('transactionCount'), 50)
+	sheet.setColumnWidth(getCategoryColIndex('transactionCount'), 75)
 	sheet.setColumnWidth(vendorColOffset - 1, 50) // Spacer column (D)
 	sheet.setColumnWidth(getVendorColIndex('vendor'), 250)
 	sheet.setColumnWidth(getVendorColIndex('totalAmount'), 150)
-	sheet.setColumnWidth(getVendorColIndex('transactionCount'), 50)
+	sheet.setColumnWidth(getVendorColIndex('transactionCount'), 75)
 	sheet.setColumnWidth(getTotalColIndex('totalSpent') - 1, 50) // Spacer column (H)
 	sheet.setColumnWidth(getTotalColIndex('totalSpent'), 150)
 
@@ -93,4 +93,47 @@ export function createStatsSheet(month: string): GoogleAppsScript.Spreadsheet.Sh
 	Logger.log(`Created new stats sheet: ${statsSheetName}`)
 
 	return sheet
+}
+
+export function addCategoryPieChart(sheet: GoogleAppsScript.Spreadsheet.Sheet, rowCount: number) {
+	// Remove all existing charts — both pie charts are always recreated together
+	sheet.getCharts().forEach(chart => sheet.removeChart(chart))
+
+	if (rowCount === 0) {
+		return
+	}
+
+	// Single contiguous range: category (col A) + totalAmount (col B)
+	const dataRange = sheet.getRange(2, getCategoryColIndex('category'), rowCount, 2)
+
+	const chart = sheet.newChart()
+		.setChartType(Charts.ChartType.PIE)
+		.addRange(dataRange)
+		.setOption('title', 'Spendings per Category')
+		.setPosition(2, getTotalColIndex('totalSpent') + 2, 0, 0)
+		.setNumHeaders(0)
+		.build()
+
+	sheet.insertChart(chart)
+}
+
+export function addVendorPieChart(sheet: GoogleAppsScript.Spreadsheet.Sheet, rowCount: number) {
+	// Category chart removal is handled by addCategoryPieChart, nothing to remove here
+
+	if (rowCount === 0) {
+		return
+	}
+
+	// Single contiguous range: vendor (col E) + totalAmount (col F)
+	const dataRange = sheet.getRange(2, getVendorColIndex('vendor'), rowCount, 2)
+
+	const chart = sheet.newChart()
+		.setChartType(Charts.ChartType.PIE)
+		.addRange(dataRange)
+		.setOption('title', 'Spendings per Vendor')
+		.setPosition(20, getTotalColIndex('totalSpent') + 2, 0, 0)
+		.setNumHeaders(0)
+		.build()
+
+	sheet.insertChart(chart)
 }

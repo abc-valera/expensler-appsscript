@@ -3,7 +3,7 @@ import type { CategoryAggregation } from '../model/category_aggregation'
 import type { VendorAggregation } from '../model/vendor_aggregation'
 import { sheetNamePattern, sheetNameToDate } from '../../../shared/dateutil'
 import { getTransactionsForMonth } from '../../transactions/data/sheet_get'
-import { createStatsSheet } from './sheet_create'
+import { addCategoryPieChart, addVendorPieChart, createStatsSheet } from './sheet_create'
 import { categoryColumnsNumber, getCategoryColIndex, getTotalColIndex, getVendorColIndex, vendorColumnsNumber } from './sheet_dto'
 import { getStatsSheet } from './sheet_get'
 
@@ -107,15 +107,18 @@ export function updateStatsSheet(month: string) {
 		(a, b) => Math.abs(b.totalAmount) - Math.abs(a.totalAmount),
 	)
 
-	const categoryRows = categoryAggregations.map(stat => [stat.category, stat.totalAmount, stat.transactionCount])
-	const vendorRows = vendorAggregations.map(stat => [stat.vendor, stat.totalAmount, stat.transactionCount])
+	const categoryRows = categoryAggregations.map(stat => [stat.category, Math.abs(stat.totalAmount), stat.transactionCount])
+	const vendorRows = vendorAggregations.map(stat => [stat.vendor, Math.abs(stat.totalAmount), stat.transactionCount])
 
 	if (categoryRows.length > 0) {
 		statsSheet.getRange(2, getCategoryColIndex('category'), categoryRows.length, categoryColumnsNumber).setValues(categoryRows)
 	}
+	addCategoryPieChart(statsSheet, categoryRows.length)
+
 	if (vendorRows.length > 0) {
 		statsSheet.getRange(2, getVendorColIndex('vendor'), vendorRows.length, vendorColumnsNumber).setValues(vendorRows)
 	}
+	addVendorPieChart(statsSheet, vendorRows.length)
 
 	const totalSpent = Array.from(categoryMap.values()).reduce((sum, c) => sum + c.totalAmount, 0)
 	statsSheet.getRange(2, getTotalColIndex('totalSpent')).setValue(totalSpent)
