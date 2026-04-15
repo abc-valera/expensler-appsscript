@@ -33,7 +33,7 @@ export class Transaction {
 		}
 		this.time = input.time
 
-		if (!input.amount) {
+		if (input.amount === undefined || input.amount === null || Number.isNaN(input.amount)) {
 			throw new Error('Transaction amount is missing')
 		}
 		this.amount = input.amount

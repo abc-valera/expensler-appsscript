@@ -1,5 +1,6 @@
 import { dateToSheetName } from '../../../shared/dateutil'
 import { Transaction } from '../model/model'
+import { columnsNumber } from './sheet_dto'
 
 export function parseRowIntoTransaction(row: unknown[]): Transaction {
 	if (!Array.isArray(row) || row.length < 8) {
@@ -36,7 +37,7 @@ export function getTransactionsForMonth(month: Date): Transaction[] {
 		return []
 	}
 
-	const data = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues()
+	const data = sheet.getRange(2, 1, lastRow - 1, columnsNumber).getValues()
 	const transactionMap = new Map<string, Transaction>()
 
 	data.forEach((row, index) => {

@@ -113,12 +113,18 @@ export function updateStatsSheet(month: string) {
 	if (categoryRows.length > 0) {
 		statsSheet.getRange(2, getCategoryColIndex('category'), categoryRows.length, categoryColumnsNumber).setValues(categoryRows)
 	}
-	addCategoryPieChart(statsSheet, categoryRows.length)
 
 	if (vendorRows.length > 0) {
 		statsSheet.getRange(2, getVendorColIndex('vendor'), vendorRows.length, vendorColumnsNumber).setValues(vendorRows)
 	}
-	addVendorPieChart(statsSheet, vendorRows.length)
+
+	try {
+		addCategoryPieChart(statsSheet, categoryRows.length)
+		addVendorPieChart(statsSheet, vendorRows.length)
+	}
+	catch (e) {
+		Logger.log(`Error updating charts for sheet ${month}-stats: ${e}`)
+	}
 
 	const totalSpent = Array.from(categoryMap.values()).reduce((sum, c) => sum + c.totalAmount, 0)
 	statsSheet.getRange(2, getTotalColIndex('totalSpent')).setValue(totalSpent)
