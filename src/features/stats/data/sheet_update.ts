@@ -33,7 +33,7 @@ export function updateStatsSheet(month: string) {
 	{
 		const lastRow = statsSheet.getLastRow()
 		if (lastRow > 1) {
-			statsSheet.deleteRows(2, lastRow - 1)
+			statsSheet.getRange(2, 1, lastRow - 1, statsSheet.getLastColumn()).clearContent()
 		}
 	}
 
