@@ -1,5 +1,5 @@
 {
-	// THE FOLLOWING SECTION DESCRIBES ESLING BEHAVIOUR
+	// THE FOLLOWING SECTION DESCRIBES ESLINT BEHAVIOUR
 	// Ref: https://github.com/antfu/eslint-config
 
 	// Disable the default formatter, use eslint instead
